@@ -11,12 +11,15 @@ DrivebaseManual::DrivebaseManual(std::string name, Drivetrain &drivetrain, Smart
 
 void DrivebaseManual::OnUpdate(double dt) {
   if(fabs(_contGroup.Get(ControlMap::drivebaseL) >= ControlMap::XboxDeadzone)) {
-    _leftPower = _contGroup.Get(ControlMap::drivebaseL);
+    _leftPower += _contGroup.Get(ControlMap::drivebaseL);
   }
 
   if(fabs(_contGroup.Get(ControlMap::drivebaseR)) >= ControlMap::XboxDeadzone) {
-    _rightPower = _contGroup.Get(ControlMap::drivebaseR);
+    _rightPower += _contGroup.Get(ControlMap::drivebaseR);
   }
+
+  _leftPower *= ControlMap::MaxDrivetrainSpeed;
+  _rightPower *= ControlMap::MaxDrivetrainSpeed;
 
   _drivetrain.Set(_leftPower, _rightPower);
 }

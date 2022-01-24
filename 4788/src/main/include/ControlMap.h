@@ -38,6 +38,8 @@ struct ControlMap {
   static constexpr double WheelRadius = 0.0762; 
   static constexpr double Mass = 50;
 
+  static const double MaxDrivetrainSpeed = 1;
+
   static constexpr int dbLeftPort1 = 99;
   static constexpr int dbLeftPort2 = 99;
 
