@@ -36,7 +36,7 @@ void Shooter::teleopOnUpdate(double dt) {
 			break;
 	}
 }
-
+//cj sucks
 //TODO @Anna figure out PID algorithm stuff
 /**
  * Needs to be a closed loop PID system 

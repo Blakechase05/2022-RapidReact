@@ -46,6 +46,7 @@ struct ControlMap {
   static constexpr int dbRightPort1 = 99;
   static constexpr int dbRightPort2 = 99;
 
+  double avgEncoder;
 
   // Intake
 

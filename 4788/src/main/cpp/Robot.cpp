@@ -26,7 +26,7 @@ void Robot::RobotInit() {
   // Zero the Encoders
   robotMap.drivebaseSystem.drivetrain.GetConfig().leftDrive.encoder->ZeroEncoder();
   robotMap.drivebaseSystem.drivetrain.GetConfig().rightDrive.encoder->ZeroEncoder();
-  
+
   // Set the default strategy for drivetrain to manual
   drivetrain->SetDefault(std::make_shared<DrivebaseManual>("Drivetrain Manual", *drivetrain, robotMap.contGroup));
   drivetrain->StartLoop(100);
@@ -68,6 +68,7 @@ void Robot::AutonomousPeriodic() {}
 void Robot::TeleopInit() {
   Schedule(drivetrain->GetDefaultStrategy(), true);
 }
+
 void Robot::TeleopPeriodic() {
 	shooter->teleopOnUpdate(dt);
 
