@@ -1,36 +1,59 @@
 #include "Shooter.h"
 #include <iostream>
+#include "frc/RobotController.h"
 
 using namespace wml;
 using namespace wml::controllers;
 
 Shooter::Shooter(RobotMap::ShooterSystem &shooterSystem, SmartControllerGroup &contGroup) : _shooterSystem(shooterSystem), _contGroup(contGroup) {}
 
-void Shooter::teleopOnUpdate(double dt) {
-  // TODO @Anna decide which case to switch to
+void Shooter::setManual(double voltage) {
+  _flyWheelVoltage = voltage;
+  _state = ShooterState::kManual;
+}
 
-  switch (_teleopShooter) {
-    case TeleopShooter::kAuto:
-      //left bumper for close shot, right bumper for far shot, POV button 
-      // if (_contGroup.Get(ControlMap::shortShoot)) {
-      //   speed(8, dt);
-      // }
-      break;
-    case TeleopShooter::kIdle:
+void Shooter::setIndex(double voltage) {
+  _setIndexVoltage = voltage;
+}
 
-      break;
-    case TeleopShooter::kManual:
+void Shooter::setPID(double goal, double dt) {
+  _state = ShooterState::kPID;
+  _angularVelocityGoal = goal;
+}
 
-      manualControl(dt);
+void Shooter::updateShooter(double dt) {
 
-      break;
-    case TeleopShooter::kTesting:
-      testing(dt);
-      break;
-    default:
-      break;
+
+  switch (_state) {
+  case ShooterState::kManual:
+    _shooterSystem.shooterGearbox.transmission->SetVoltage(_flyWheelVoltage * 12);
+
+    _shooterSystem.indexWheel.Set(_setIndexVoltage);
+
+    break;
+
+  case ShooterState::kIdle:
+
+    _shooterSystem.indexWheel.Set(_setIndexVoltage);
+    _shooterSystem.shooterGearbox.transmission->SetVoltage(0);
+
+    break;
+
+  case ShooterState::kPID:
+    _flyWheelVoltage = calculatePID(_angularVelocityGoal, dt);
+    _shooterSystem.indexWheel.Set(_setIndexVoltage);
+
+    _shooterSystem.shooterGearbox.transmission->SetVoltage(_flyWheelVoltage * 12);
+    std::cout << "shooter speed" << _shooterSystem.rightFlyWheelMotor.GetEncoderAngularVelocity() << std::endl; 
+    break;
+
+  default:
+    _state = ShooterState::kIdle;
+    std::cout << "in default case, somthing is wrong" << std::endl;
+    break;
   }
 }
+<<<<<<< HEAD
 //cj sucks
 //TODO @Anna figure out PID algorithm stuff
 /**
@@ -49,34 +72,34 @@ double Shooter::speed(double metersPerSecond, double dt) {
   // ControlMap::previousError = ControlMap::error;
 
   // return ControlMap::output;
+=======
+
+void Shooter::update(double dt) {
+  updateShooter(dt);
+>>>>>>> 0fb045b50d34c3d1bd2157d584bbca8869456844
 }
 
 
-/**
-  * Left trigger controls the shooter manually
-  */
-void Shooter::manualControl(double dt) {
-  shooterManualSpeed = fabs(_contGroup.Get(ControlMap::shooterManualSpin)) > ControlMap::triggerDeadzone ? _contGroup.Get(ControlMap::shooterManualSpin) : 0;
+double Shooter::calculatePID(double angularVelocity, double dt) {
+  double input = (_shooterSystem.leftFlyWheelMotor.GetEncoderAngularVelocity());
+  std::cout << "angular velocity" << input << std::endl;
+  double error = _angularVelocityGoal - input;
+  double derror = (error - _previousError) / dt;
+  _sum += error * dt;
 
-  _shooterSystem.shooterGearbox.transmission->SetVoltage(shooterManualSpeed);
-}
+  double output = ControlMap::ShooterGains::kp * error + ControlMap::ShooterGains::ki * _sum + (ControlMap::ShooterGains::kd) * derror;
+  std::cout << "P Value: " << ControlMap::ShooterGains::kp << std::endl;
 
-/**
-  * for testing the shooter
-  */
-void Shooter::testing(double dt) {
+  auto &motor = _shooterSystem.shooterGearbox.motor;
+  double Vmax = ControlMap::ShooterGains::IMax * motor.R() + motor.kw() * input;
+  double Vmin = -(ControlMap::ShooterGains::IMax) * motor.R() + motor.kw() * input;
 
-  shooterTestingSpeed = fabs(_contGroup.Get(ControlMap::shooterManualSpin)) > ControlMap::triggerDeadzone ? _contGroup.Get(ControlMap::shooterManualSpin) : 0;
+  output = std::min(std::max(output, Vmin), Vmax);
 
-  // _shooterSystem.shooterGearbox.transmission->SetVoltage(shooterTestingSpeed);
+  _previousError = error;
 
-  _shooterSystem.leftFlyWheelMotor.Set(shooterTestingSpeed);
-  _shooterSystem.rightFlyWheelMotor.Set(shooterTestingSpeed);
-  _shooterSystem.centerFlyWheelMotor.Set(shooterTestingSpeed);
-
-  // std::cout << shooterManualSpeed << std::endl;
-  // std::cout << _leftFlyWheelMotor.GetEncoder()->GetEncoderAngularVelocity() << std::endl;
-  // std::cout << _rightFlyWheelMotor.encoder->GetEncoderAngularVelocity() << std::endl;
-
-  nt::NetworkTableInstance::GetDefault().GetTable("RobotValue")->GetSubTable("Shooter")->GetEntry("Angular velocity").SetDouble(0.6);
+  std::cout << "error: " << error << std::endl;
+  std::cout << "Output: " << output*12 << std::endl;
+  // std::cout << "DT: " << dt << std::endl;
+  return output;
 }
