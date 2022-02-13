@@ -26,7 +26,7 @@
 #include <networktables/NetworkTableInstance.h>
 #include <wpi/SmallString.h>
 
-// WML
+// WML sucks
 #include <WMLCtre.h>
 #include <controllers/Controllers.h>
 #include <actuators/BinaryServo.h>
@@ -59,9 +59,9 @@
 
 struct RobotMap {
   // Controllers
-  wml::controllers::XboxController xbox1{ ControlMap::Xbox1Port };
-  wml::controllers::XboxController xbox2{ ControlMap::Xbox2Port };
-  wml::controllers::SmartControllerGroup contGroup{ xbox1, xbox2};
+  wml::controllers::XboxController xbox{ ControlMap::XboxPort };
+  wml::controllers::Joystick joystick{ ControlMap::JoystickPort };
+  wml::controllers::SmartControllerGroup contGroup{ xbox, joystick};
 
   struct ControlSystem {
     wml::sensors::PressureSensor pressureSensor{ ControlMap::PressureSensorPort };
@@ -72,4 +72,39 @@ struct RobotMap {
     wml::TalonSrx elevatorMotor{ControlMap::ElevatorMotorPort, 2048};
     wml::actuators::DoubleSolenoid elevatorSolenoid{ ControlMap::PCModule, ControlMap::ElevatorSolenoidPort, 0.1};
   }; ExampleElevatorSystem exampleElevatorSystem;
+
+  struct DrivebaseSystem {
+    // Init Motors
+    wml::TalonSrx leftMotorF{ControlMap::leftMotorPortF, 2048};
+    wml::TalonSrx leftMotorB{ControlMap::leftMotorPortB, 2048};
+
+    wml::TalonSrx rightMotorF{ControlMap::rightMotorPortF, 2048};
+    wml::TalonSrx rightMotorB{ControlMap::rightMotorPortB, 2048};
+
+    wml::actuators::MotorVoltageController leftMotors = wml::actuators::MotorVoltageController::Group(leftMotorF, leftMotorB);
+    wml::actuators::MotorVoltageController rightMotors = wml::actuators::MotorVoltageController::Group(rightMotorF, rightMotorB);
+
+    wml::Gearbox LGearbox{&leftMotors, &leftMotorF};
+    wml::Gearbox RGearbox{&rightMotors, &rightMotorF};
+    
+    wml::sensors::NavX navX{};
+    wml::sensors::NavXGyro gyro{navX.Angular(wml::sensors::AngularAxis::YAW)};
+
+    wml::DrivetrainConfig drivetrainConfig{LGearbox, RGearbox, &gyro, ControlMap::trackWidth, ControlMap::trackDepth, ControlMap::wheelRadius, ControlMap::mass};
+    wml::control::PIDGains gainsVelocity{"Drivetrain Velocity", 1};
+    wml::Drivetrain drivetrain{drivetrainConfig, gainsVelocity};
+
+  }; DrivebaseSystem drivebaseSystem;
+
+  struct Intake1System {
+    wml::TalonSrx intake1Motor1{ControlMap::intake1MotorPort1, 2048};
+    wml::TalonSrx intake1Motor2{ControlMap::intake1MotorPort2, 2048};
+
+  }; Intake1System intake1System;
+
+  struct Intake2System {
+    wml::TalonSrx intake2Motor1{ControlMap::intake2MotorPort1, 2048};
+    wml::TalonSrx intake2Motor2{ControlMap::intake2MotorPort2, 2048};
+  }; Intake2System intake2System;
+
 };

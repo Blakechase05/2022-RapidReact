@@ -16,8 +16,8 @@ struct ControlMap {
   // ------------------ Values ------------------
 
   // Controllers
-  static constexpr int Xbox1Port = 0;
-  static constexpr int Xbox2Port = 1;
+  static constexpr int JoystickPort = 0;
+  static constexpr int XboxPort = 1;
 
   // USB port numbers
   static const int Driver = 1;
@@ -33,10 +33,32 @@ struct ControlMap {
   static constexpr int CompressorPort = 0;
 
   // Drivetrain
+  static constexpr double trackWidth = 0.56;
+  static constexpr double trackDepth = 0.60;
+  static constexpr double wheelRadius = 0.0762; 
+  static constexpr double mass = 50;
 
-  // Intake
+  static constexpr int leftMotorPortF = 99;
+  static constexpr int leftMotorPortB = 99;
+  static constexpr int rightMotorPortF = 99;
+  static constexpr int rightMotorPortB = 99;
+
+  static constexpr double maxDrivetrainPower = 0.5;
+
+  // Intake 1
+  static constexpr int intake1MotorPort1 = 99;
+  static constexpr int intake1MotorPort2 = 99;
+
+  // Intake 2
+  static constexpr int intake2MotorPort1 = 99;
+  static constexpr int intake2MotorPort2 = 99;
 
   // Shooter
+
+  static constexpr int shooterMotorPort1 = 99;
+  static constexpr int shooterMotorPort2 = 99;
+  static constexpr int indexingMotorPort1 = 99;
+  static constexpr int indexingMotorPort2 = 99;
 
   // Climber
 
@@ -49,12 +71,20 @@ struct ControlMap {
   // ------------------ Controls ------------------
 
   // Drivetrain
+  inline static const wml::controllers::tAxis sideControl{ Driver, wml::controllers::Joystick::kXAxis };
+  inline static cosnt wml::controllers::tAxis forwardControl{ Driver, wml::controllers::Joystick::kYAxis };
 
-  // Intake
+  // Intake 1
+  inline static const wml::controllers::tAxis intake1Control{ CoDriver, wml::controllers::XboxController::kLeftYAxis };
+  inline static const wml::controllers::tButton intake1Actuation{ CoDriver, wml::controllers::XboxController::kX };
 
-  // Shoter
+  // Intake 2
+  inline static const wml::controllers::tAxis intake2Control{ CoDriver, wml::controllers::XboxController::kRightYAxis };
+  inline static const wml::controllers::tButton intake2Actuation{ CoDriver, wml::controllers::XboxController::kB };
 
-  // Climber
+  // Shooter
+  inline static const wml::controllers::tButton shooterSwitch{ CoDriver, XboxController::kA };
+  inline static const wml::controllers::tAxis shooterShoot{ CoDriver, XboxController::kRightThrottle }; //haha shootershoot funny
 
   // Example Elevator
   inline static const wml::controllers::tAxis Belevator{ CoDriver, XboxController::kLeftYAxis };
